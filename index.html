@@ -95,21 +95,22 @@ HTML
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Payload Pix e QR Code</title>
-    <style>
+   <style>
         /* ... (Mantenha todos os estilos do seu modal Pix) ... */
 
         /* NOVOS ESTILOS PARA FORÇAR A PÁGINA PARA O TOPO E ESQUERDA COM ZOOM */
 
-        /* 1. Resetar margens/paddings do HTML e BODY para garantir que o conteúdo comece do topo e esquerda */
+        /* 1. Resetar margens/paddings do HTML e BODY e garantir que eles ocupem a altura total */
         html, body {
             margin: 0 !important;
             padding: 0 !important;
             height: 100% !important; /* Ocupa a altura total da viewport */
             min-height: 100vh !important; /* Garante que o body ocupe no mínimo a altura da viewport */
-            overflow-x: hidden !important; /* Essencial para evitar rolagem horizontal indesejada */
-            overflow-y: auto !important; /* Permite rolagem vertical se o conteúdo for maior que a tela */
             width: 100% !important; /* Garante 100% da largura do viewport */
-            position: relative !important; /* Necessário para posicionar #SITE_CONTAINER */
+            
+            /* ESSENCIAL PARA CORTAR O EXCEDENTE LATERAL E EVITAR SCROLL HORIZONTAL */
+            overflow-x: hidden !important; 
+            overflow-y: auto !important; /* Permite rolagem vertical se o conteúdo for maior que a tela */
         }
 
         /* 2. Ocultar a barra de anúncio do Wix (se presente) */
@@ -120,22 +121,26 @@ HTML
         /* 3. Estilizar o contêiner principal do site Wix para zoom e posicionamento */
         /* #SITE_CONTAINER e #site-root são os principais wrappers do conteúdo do Wix */
         #SITE_CONTAINER, #site-root {
-            position: absolute !important; /* Posiciona o contêiner em relação ao body (0,0) */
+            position: absolute !important; /* Posiciona o contêiner em relação ao body */
             top: 0 !important; /* Cola no topo */
-            left: 0 !important; /* Cola na esquerda */
+            /* left: 0 !important; foi removido daqui para centralização horizontal */
             
-            /* Largura e altura original do design do Wix (se for 980px, por exemplo) */
-            /* Se o seu site Wix original tem uma largura de 980px, use isso aqui */
+            /* Largura de referência para o scale. Ajuste se o design original do Wix for diferente de 980px. */
             width: 980px !important; /* Largura padrão de design do Wix */
             height: auto !important; /* Altura se ajusta ao conteúdo */
             min-height: 100% !important; /* Garante que o conteúdo ocupe a altura mínima */
             
-            transform-origin: top left !important; /* Ponto de origem do zoom: canto superior esquerdo */
-            
             /* VALOR DO ZOOM: ESTE É O VALOR PRINCIPAL QUE VOCÊ DEVE AJUSTAR! */
             /* Comece com um valor para mobile, ex: 0.4 (40%) ou 0.5 (50%). */
-            /* Se o site parecer muito pequeno, aumente. Se estiver cortando, diminua. */
             transform: scale(0.4) !important; /* Exemplo: 40% do tamanho original para mobile */
+            
+            /* NOVO: CENTRALIZAÇÃO HORIZONTAL COM MARGEM NEGATIVA APÓS A ESCALA */
+            /* Cálculo: (largura_original_site * (1 - scale)) / 2 */
+            /* Ex: (980 * (1 - 0.4)) / 2 = (980 * 0.6) / 2 = 588 / 2 = 294px */
+            /* Ou simplesmente use translateX para centralizar */
+            left: 50% !important; /* Começa no centro da viewport */
+            transform: translateX(-50%) scale(0.4) !important; /* Centraliza E aplica a escala */
+            transform-origin: top center !important; /* Ponto de origem do zoom: topo e centro */
             
             /* Garante que não haja larguras mínimas ou máximas conflitantes */
             min-width: unset !important;
@@ -153,6 +158,7 @@ HTML
             padding: 0 !important;
             top: 0 !important; /* Garante que ele também comece do topo */
             left: 0 !important; /* Garante que ele também comece da esquerda */
+            transform: none !important; /* Garante que não haja transformações conflitantes */
         }
 
         /* Outros contêineres importantes que podem ter largura fixa */
@@ -169,33 +175,24 @@ HTML
         }
         
         /* 5. Media queries para ajustar o zoom em telas diferentes */
+        /* Ajuste os valores de scale para cada breakpoint */
         @media (min-width: 1025px) { /* Para telas de desktop maiores */
             #SITE_CONTAINER, #site-root {
-                /* Para desktop, pode ser 100% ou um pouco menos se o design original for muito grande */
-                transform: scale(1) !important; /* Sem zoom em desktop */
-                width: 100% !important; /* Ocupa 100% da largura do viewport */
-                /* Se o site original é 980px, talvez você queira max-width: 980px para centralizar */
-                /* Ou se ele já se centraliza no Wix, não precise mudar a largura aqui */
+                transform: translateX(-50%) scale(1) !important; /* Sem zoom em desktop, centralizado */
+                width: 980px !important; /* Mantém a largura de referência para desktop, ajuste se seu site original for diferente */
             }
         }
 
-        @media (max-width: 768px) { /* Para tablets e celulares (largura padrão do site Wix exportado é 320px no mobile) */
+        @media (max-width: 768px) { /* Para tablets e celulares */
             #SITE_CONTAINER, #site-root {
-                /* Aqui você ajusta o zoom para a visualização mobile. */
-                /* A imagem que você mandou parece ter um site que originalmente era mais largo que 320px no mobile. */
-                /* Se o conteúdo visual original do Wix é tipo 980px (desktop) e no mobile ele deveria "caber" em 320px */
-                /* A proporção seria 320/980 = ~0.32. */
-                /* Mas como o Wix pode ter elementos que não escalam, o scale do transform pode ser um ajuste visual. */
-                transform: scale(0.35) !important; /* Exemplo: 35% do tamanho original */
-                /* TESTE MUITO BEM ESTE VALOR: 0.35, 0.4, 0.45, etc. */
-                /* O objetivo é que 100% da largura escalada (980 * 0.35 = 343px) caiba na tela */
-                width: 980px !important; /* Mantém a largura do design original para o cálculo do scale */
+                transform: translateX(-50%) scale(0.4) !important; /* Ajuste este valor! Ex: 0.45, 0.5 */
+                width: 980px !important; /* Mantém a largura de referência para o scale */
             }
         }
 
-        @media (max-width: 480px) { /* Para celulares menores (se você quiser um ajuste ainda mais específico) */
+        @media (max-width: 480px) { /* Para celulares menores */
             #SITE_CONTAINER, #site-root {
-                transform: scale(0.3) !important; /* Exemplo: 30% do tamanho original */
+                transform: translateX(-50%) scale(0.3) !important; /* Ajuste este valor! Ex: 0.35, 0.4 */
                 width: 980px !important; /* Mantém a largura de referência para o scale */
             }
         }
@@ -205,7 +202,6 @@ HTML
             width: 95% !important;
             max-width: 95% !important;
             padding: 10px !important;
-            /* Lembre-se que o modal sempre centralizará no viewport visível do navegador, não no conteúdo escalado */
             margin: 5% auto !important; 
         }
         #qrcode-modal-content {
